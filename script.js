@@ -1,40 +1,96 @@
-// estados
-const statuses = ["Backlog", "To Do", "In Progress", "Blocked", "Done"];
+let tasks = [];
+let currentTaskIndex = null;
 
-// prioridades
-const priorities = ["Low", "Medium", "High"];
+document.getElementById('addTaskBtn').addEventListener('click', function () {
+    document.getElementById('taskForm').reset();
+    currentTaskIndex = null;  // Reseteamos para indicar que es una nueva tarea
 
-class Task {
-    constructor(title, description, assignedTo, priority, deadline, status) {
-        this.title = title;
-        this.description = description;
-        this.assignedTo = assignedTo;
-        this.priority = priority;
-        this.deadline = deadline;
-        this.status = status;
+    openTaskModal();
+});
+
+document.getElementById('cancelTaskBtn').addEventListener('click', function () {
+    closeTaskModal();
+});
+
+document.getElementById('saveTaskBtn').addEventListener('click', function () {
+    saveTask();
+});
+
+function openTaskModal() {
+    document.getElementById('taskModal').classList.add('is-active');
+}
+
+function closeTaskModal() {
+    document.getElementById('taskModal').classList.remove('is-active');
+    currentTaskIndex = null;  
+}
+
+function saveTask() {
+    let title = document.getElementById('taskTitle').value;
+    let description = document.getElementById('taskDescription').value;
+    let assignedTo = document.getElementById('taskAssigned').value;
+    let priority = document.getElementById('taskPriority').value;
+    let status = document.getElementById('taskStatus').value;
+    let deadline = document.getElementById('taskDeadline').value;
+
+    let task = {
+        title,
+        description,
+        assignedTo,
+        priority,
+        status,
+        deadline
+    };
+
+    if (currentTaskIndex !== null) {
+        // Modo edición
+        tasks[currentTaskIndex] = task;
+    } else {
+        // Modo creación
+        tasks.push(task);
     }
+
+    renderTasks();
+    closeTaskModal();
 }
 
-// crear metodo cargarDatos()
+function renderTasks() {
+    let columns = {
+        backlog: document.getElementById('backlog').querySelector('.tasks'),
+        todo: document.getElementById('todo').querySelector('.tasks'),
+        'in-progress': document.getElementById('in-progress').querySelector('.tasks'),
+        blocked: document.getElementById('blocked').querySelector('.tasks'),
+        done: document.getElementById('done').querySelector('.tasks')
+    };
 
-// Cargamos informacion para testear
-let tarea1 = new Task("Colgar la ropa", "Hay que ir afuera y colgar la ropa antes que llueva", "Pepe", priorities[1], new Date("2024-08-21"), statuses[0]);
-let tarea2 = new Task("Programar", "Picar codigo", "Pepe", priorities[1], new Date("2024-08-21"), statuses[1]);
-let tarea3 = new Task("Ir al super", "Comprar harina, arroz, coca", "Álvaro", priorities[2], new Date("2024-08-21"), statuses[2]);
-let tarea4 = new Task("Sacar la basura", "Dale bo", "Diego", priorities[0], new Date("2024-08-22"), statuses[3]);
-let tarea5 = new Task("Estudiar", "Para programacion web obvio", "Juan", priorities[0], new Date("2024-08-23"), statuses[4]);
+    // Limpiar tareas actuales
+    for (let column in columns) {
+        columns[column].innerHTML = '';
+    }
 
-function loadDataInHTML() {
-    const divBacklog = document.getElementById("backlog");
-    divBacklog.innerText = "<div class=\"notification is - info\" > < b > Tarea1</b > <p>Descripcion de la tarea lalala</p>  </div > ";
+    // Renderizar nuevas tareas
+    tasks.forEach((task, index) => {
+        let taskElement = document.createElement('div');
+        taskElement.classList.add('notification', 'is-info');
+        taskElement.innerHTML = `<b>${task.title}</b><p>${task.description}</p>`;
+        columns[task.status].appendChild(taskElement);
 
+        // Evento para editar la tarea al hacer clic
+        taskElement.addEventListener('click', function () {
+            editTask(task, index);
+        });
+    });
 }
 
-loadDataInHTML();
+function editTask(task, index) {
+    currentTaskIndex = index;  // Guardamos el índice de la tarea que se está editando
 
-/*
-                    <div class="notification is-info" >
-                        <b>Tarea1</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-*/
+    document.getElementById('taskTitle').value = task.title;
+    document.getElementById('taskDescription').value = task.description;
+    document.getElementById('taskAssigned').value = task.assignedTo;
+    document.getElementById('taskPriority').value = task.priority;
+    document.getElementById('taskStatus').value = task.status;
+    document.getElementById('taskDeadline').value = task.deadline;
+
+    openTaskModal();
+}

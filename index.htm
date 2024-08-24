@@ -2,82 +2,122 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obligatorio Bulma</title>
+    <title>Gestor de Tareas</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
 </head>
 
 <body class="has-text-centered">
-    <h2 class="title is-size-2">Gestor de Tareas</h1>
     <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="notification" id="backlog">
-                    <h4 class="title is-4">Backlog</h4>
+        <h2 class="title is-size-2">Gestor de Tareas</h2>
 
+        <button class="button is-primary" id="addTaskBtn">Nueva Tarea</button>
 
-                </div>
+        <div class="columns is-mobile is-multiline">
+            <div class="column is-one-fifth" id="backlog">
+                <h4 class="title is-4">Backlog</h4>
+                <div class="tasks"></div>
             </div>
-            <div class="column">
-                <div class="notification">
-                    <h4 class="title is-4">To Do</h4>
-
-                    <div class="notification is-info">
-                        <b>Tarea1</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                    <div class="notification is-info">
-                        <b>Tarea2</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                </div>
-            </div><div class="column">
-                <div class="notification">
-                    <h4 class="title is-4">In Progress</h4>
-
-                    <div class="notification is-info">
-                        <b>Tarea1</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                    <div class="notification is-info">
-                        <b>Tarea2</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                </div>
-            </div><div class="column">
-                <div class="notification">
-                    <h4 class="title is-4">Blocked</h4>
-
-                    <div class="notification is-info">
-                        <b>Tarea1</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                    <div class="notification is-info">
-                        <b>Tarea2</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                </div>
-            </div><div class="column">
-                <div class="notification">
-                    <h4 class="title is-4">Done</h4>
-
-                    <div class="notification is-info">
-                        <b>Tarea1</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                    <div class="notification is-info">
-                        <b>Tarea2</b>
-                        <p>Descripcion de la tarea lalala</p>
-                    </div>
-                </div>
+            <div class="column is-one-fifth" id="todo">
+                <h4 class="title is-4">To-Do</h4>
+                <div class="tasks"></div>
             </div>
-           
+            <div class="column is-one-fifth" id="in-progress">
+                <h4 class="title is-4">In-Progress</h4>
+                <div class="tasks"></div>
+            </div>
+            <div class="column is-one-fifth" id="blocked">
+                <h4 class="title is-4">Blocked</h4>
+                <div class="tasks"></div>
+            </div>
+            <div class="column is-one-fifth" id="done">
+                <h4 class="title is-4">Done</h4>
+                <div class="tasks"></div>
+            </div>
         </div>
-
     </div>
-</body>
 
+    <!-- Modal para crear/editar tareas -->
+    <div class="modal" id="taskModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Tarea</p>
+            </header>
+            <section class="modal-card-body">
+                <form id="taskForm">
+                    <div class="field">
+                        <label class="label">Título</label>
+                        <div class="control">
+                            <input class="input" type="text" id="taskTitle" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Descripción</label>
+                        <div class="control">
+                            <textarea class="textarea" id="taskDescription" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Asignado a</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="taskAssigned">
+                                    <option value="Persona1">Anita</option>
+                                    <option value="Persona2">Bruno</option>
+                                    <option value="Persona3">Diego</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Prioridad</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="taskPriority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Estado</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="taskStatus">
+                                    <option value="backlog">Backlog</option>
+                                    <option value="todo">To-Do</option>
+                                    <option value="in-progress">In-Progress</option>
+                                    <option value="blocked">Blocked</option>
+                                    <option value="done">Done</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Fecha límite</label>
+                        <div class="control">
+                            <input class="input" type="date" id="taskDeadline" required>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" id="saveTaskBtn">Guardar</button>
+                <button class="button" id="cancelTaskBtn">Cancelar</button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="script.js"></script> 
+</body>
 
 </html>
