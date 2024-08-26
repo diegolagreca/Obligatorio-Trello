@@ -1,11 +1,18 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Tareas</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <style>
+        .tasks {
+            width: 100%;
+            height: 100%;
+        }
+        
+        </style>
 </head>
 
 <body class="has-text-centered">
@@ -13,6 +20,7 @@
         <h2 class="title is-size-2">Gestor de Tareas</h2>
 
         <button class="button is-primary" id="addTaskBtn">Nueva Tarea</button>
+        <button class="button" id="toggleModeBtn">Light/Dark</button>
 
         <div class="columns is-mobile is-multiline">
             <div class="column is-one-fifth" id="backlog">

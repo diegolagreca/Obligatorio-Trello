@@ -1,96 +1,152 @@
-let tasks = [];
-let currentTaskIndex = null;
+const addTaskButton = document.getElementById('addTaskBtn');
+const taskModal = document.getElementById('taskModal');
+const closeModalButton = document.querySelector('.modal-background');
+const cancelTaskButton = document.getElementById('cancelTaskBtn');
+const taskForm = document.getElementById('taskForm');
+const toggleModeBtn = document.getElementById('toggleModeBtn');
 
-document.getElementById('addTaskBtn').addEventListener('click', function () {
-    document.getElementById('taskForm').reset();
-    currentTaskIndex = null;  // Reseteamos para indicar que es una nueva tarea
+// Dark/Light Mode
+toggleModeBtn.addEventListener('click', toggleMode);
+function toggleMode(){
+    let actualMode = document.documentElement.getAttribute('data-theme');
 
-    openTaskModal();
-});
-
-document.getElementById('cancelTaskBtn').addEventListener('click', function () {
-    closeTaskModal();
-});
-
-document.getElementById('saveTaskBtn').addEventListener('click', function () {
-    saveTask();
-});
-
-function openTaskModal() {
-    document.getElementById('taskModal').classList.add('is-active');
-}
-
-function closeTaskModal() {
-    document.getElementById('taskModal').classList.remove('is-active');
-    currentTaskIndex = null;  
-}
-
-function saveTask() {
-    let title = document.getElementById('taskTitle').value;
-    let description = document.getElementById('taskDescription').value;
-    let assignedTo = document.getElementById('taskAssigned').value;
-    let priority = document.getElementById('taskPriority').value;
-    let status = document.getElementById('taskStatus').value;
-    let deadline = document.getElementById('taskDeadline').value;
-
-    let task = {
-        title,
-        description,
-        assignedTo,
-        priority,
-        status,
-        deadline
-    };
-
-    if (currentTaskIndex !== null) {
-        // Modo edición
-        tasks[currentTaskIndex] = task;
-    } else {
-        // Modo creación
-        tasks.push(task);
+    if(actualMode === 'light'){
+        document.documentElement.setAttribute('data-theme','dark');
+    }else{
+        document.documentElement.setAttribute('data-theme','light');
     }
-
-    renderTasks();
-    closeTaskModal();
 }
 
-function renderTasks() {
-    let columns = {
-        backlog: document.getElementById('backlog').querySelector('.tasks'),
-        todo: document.getElementById('todo').querySelector('.tasks'),
-        'in-progress': document.getElementById('in-progress').querySelector('.tasks'),
-        blocked: document.getElementById('blocked').querySelector('.tasks'),
-        done: document.getElementById('done').querySelector('.tasks')
-    };
+// Inicio MODAL --------------------------------
 
-    // Limpiar tareas actuales
-    for (let column in columns) {
-        columns[column].innerHTML = '';
-    }
+function openModal() {
+    taskModal.classList.add('is-active');
+    taskForm.reset();  // Limpiar el formulario cuando se abre el modal
+}
 
-    // Renderizar nuevas tareas
-    tasks.forEach((task, index) => {
-        let taskElement = document.createElement('div');
-        taskElement.classList.add('notification', 'is-info');
-        taskElement.innerHTML = `<b>${task.title}</b><p>${task.description}</p>`;
-        columns[task.status].appendChild(taskElement);
+function closeModal() {
+    taskModal.classList.remove('is-active');
+    taskForm.reset();  // Limpiar el formulario cuando se cierra el modal
+    document.querySelector('.modal-card-title').textContent = 'Tarea'; // Resetear el título
+    currentTaskId = null; // Resetear el ID para nuevas tareas
+}
 
-        // Evento para editar la tarea al hacer clic
-        taskElement.addEventListener('click', function () {
-            editTask(task, index);
-        });
+addTaskButton.addEventListener('click', openModal);
+closeModalButton.addEventListener('click', closeModal);
+cancelTaskButton.addEventListener('click', closeModal);
+
+function openEditModal(taskId) {
+    currentTaskId = taskId; // Almacena el ID de la tarea que se está editando
+    const taskElement = document.querySelector(`[data-id='${taskId}']`);
+
+    // Cargar la información de la tarea en los campos del formulario
+    taskForm['taskTitle'].value = taskElement.querySelector('h3').textContent;
+    taskForm['taskDescription'].value = taskElement.querySelector('.description').textContent;
+    taskForm['taskAssigned'].value = taskElement.querySelector('.details p:first-child').textContent.split(': ')[1];
+    taskForm['taskPriority'].value = taskElement.querySelector('.priority').textContent.split(': ')[1];
+    taskForm['taskStatus'].value = taskElement.closest('.column').id;
+    taskForm['taskDeadline'].value = taskElement.querySelector('.deadline').textContent.split(': ')[1];
+
+    // Cambiar el título del modal para indicar que es una edición
+    document.querySelector('.modal-card-title').textContent = 'Editar Tarea';
+
+    // Abrir el modal
+    taskModal.classList.add('is-active');
+}
+
+// Fin MODAL --------------------------------
+
+// Inicio ADD TASKS --------------------------------
+const taskColumns = {
+    backlog: document.getElementById('backlog').querySelector('.tasks'),
+    todo: document.getElementById('todo').querySelector('.tasks'),
+    'in-progress': document.getElementById('in-progress').querySelector('.tasks'),
+    blocked: document.getElementById('blocked').querySelector('.tasks'),
+    done: document.getElementById('done').querySelector('.tasks')
+};
+
+let currentTaskId = null;
+
+function createTaskElement(title, description, assigned, priority, deadline, id = Date.now()) {
+    const taskElement = document.createElement('div');
+    taskElement.classList.add('box', 'task');
+    taskElement.classList.add('notification', 'is-info');
+    taskElement.dataset.id = id;
+    taskElement.draggable = true;  // Hacer que la tarea sea draggable
+
+    taskElement.innerHTML = `
+        <h3>${title}</h3>
+        <p class="description">${description}</p>
+        <div class="details">
+            <p><strong>Asignado:</strong> ${assigned}</p>
+            <p class="priority ${priority.toLowerCase()}"><strong>Prioridad:</strong> ${priority}</p>
+        </div>
+        <p class="deadline"><strong>Fecha límite:</strong> ${deadline}</p>
+    `;
+
+    // Evento de arrastrar (dragstart)
+    taskElement.addEventListener('dragstart', function(event) {
+        event.dataTransfer.setData('text/plain', id); // Guardar el id de la tarea arrastrada
     });
+
+    // Evento de clic para editar la tarea
+    taskElement.addEventListener('click', function() {
+        openEditModal(id);
+    });
+
+    return taskElement;
 }
 
-function editTask(task, index) {
-    currentTaskIndex = index;  // Guardamos el índice de la tarea que se está editando
+document.getElementById('saveTaskBtn').addEventListener('click', function(event) {
+    event.preventDefault();
+    
+    const title = taskForm['taskTitle'].value;
+    const description = taskForm['taskDescription'].value;
+    const assigned = taskForm['taskAssigned'].value;
+    const priority = taskForm['taskPriority'].value;
+    const status = taskForm['taskStatus'].value;
+    const deadline = taskForm['taskDeadline'].value;
 
-    document.getElementById('taskTitle').value = task.title;
-    document.getElementById('taskDescription').value = task.description;
-    document.getElementById('taskAssigned').value = task.assignedTo;
-    document.getElementById('taskPriority').value = task.priority;
-    document.getElementById('taskStatus').value = task.status;
-    document.getElementById('taskDeadline').value = task.deadline;
+    if (currentTaskId) {
+        const taskElement = document.querySelector(`[data-id='${currentTaskId}']`);
 
-    openTaskModal();
-}
+        taskElement.querySelector('h3').textContent = title;
+        taskElement.querySelector('.description').textContent = description;
+        taskElement.querySelector('.details p:first-child').innerHTML = `<strong>Asignado:</strong> ${assigned}`;
+        taskElement.querySelector('.priority').innerHTML = `<strong>Prioridad:</strong> ${priority}`;
+        taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
+        taskElement.querySelector('.deadline').innerHTML = `<strong>Fecha límite:</strong> ${deadline}`;
+
+        if (taskElement.closest('.column').id !== status) {
+            taskColumns[status].appendChild(taskElement);
+        }
+
+        currentTaskId = null;
+    } else {
+        const newTask = createTaskElement(title, description, assigned, priority, deadline);
+        taskColumns[status].appendChild(newTask);
+    }
+
+    closeModal();
+});
+
+// FIN ADD TASKS --------------------------------
+
+// Inicio DRAG AND DROP --------------------------------
+Object.keys(taskColumns).forEach(status => {
+    const column = taskColumns[status];
+
+    column.addEventListener('dragover', function(event) {
+        event.preventDefault();
+    });
+
+    column.addEventListener('drop', function(event) {
+        event.preventDefault();
+
+        const taskId = event.dataTransfer.getData('text/plain');
+        const taskElement = document.querySelector(`[data-id='${taskId}']`);
+
+        column.appendChild(taskElement);
+    });
+});
+// Fin DRAG AND DROP --------------------------------
