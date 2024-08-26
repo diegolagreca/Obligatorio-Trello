@@ -8,38 +8,41 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
     <style>
         .tasks {
+            min-height: 50px;
             width: 100%;
             height: 100%;
         }
-        
-        </style>
+
+    </style>
 </head>
 
 <body class="has-text-centered">
     <div class="container">
         <h2 class="title is-size-2">Gestor de Tareas</h2>
+        <div class="buttons is-centered">
+            <button class="button is-primary" id="addTaskBtn">Nueva Tarea</button>
+            <button class="button" id="toggleModeBtn">Light/Dark</button>
+        </div>
 
-        <button class="button is-primary" id="addTaskBtn">Nueva Tarea</button>
-        <button class="button" id="toggleModeBtn">Light/Dark</button>
+        <div class="columns is-variable is-1-mobile is-2-tablet is-3-desktop is-4-widescreen is-5-fullhd is-multiline">
 
-        <div class="columns is-mobile is-multiline">
-            <div class="column is-one-fifth" id="backlog">
+            <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="backlog">
                 <h4 class="title is-4">Backlog</h4>
                 <div class="tasks"></div>
             </div>
-            <div class="column is-one-fifth" id="todo">
+            <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="todo">
                 <h4 class="title is-4">To-Do</h4>
                 <div class="tasks"></div>
             </div>
-            <div class="column is-one-fifth" id="in-progress">
+            <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="in-progress">
                 <h4 class="title is-4">In-Progress</h4>
                 <div class="tasks"></div>
             </div>
-            <div class="column is-one-fifth" id="blocked">
+            <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="blocked">
                 <h4 class="title is-4">Blocked</h4>
                 <div class="tasks"></div>
             </div>
-            <div class="column is-one-fifth" id="done">
+            <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="done">
                 <h4 class="title is-4">Done</h4>
                 <div class="tasks"></div>
             </div>
@@ -125,7 +128,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script> 
+    <script src="script.js"></script>
 </body>
 
 </html>
