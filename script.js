@@ -5,6 +5,13 @@ const cancelTaskButton = document.getElementById('cancelTaskBtn');
 const taskForm = document.getElementById('taskForm');
 const toggleModeBtn = document.getElementById('toggleModeBtn');
 
+// Mapa de conversiones de valores a nombres visibles
+const userMap = {
+    "Persona1": "Juan",
+    "Persona2": "Diego",
+    "Persona3": "Álvaro"
+};
+
 // Dark/Light Mode
 toggleModeBtn.addEventListener('click', toggleMode);
 function toggleMode(){
@@ -42,7 +49,11 @@ function openEditModal(taskId) {
     // Cargar la información de la tarea en los campos del formulario
     taskForm['taskTitle'].value = taskElement.querySelector('h3').textContent;
     taskForm['taskDescription'].value = taskElement.querySelector('.description').textContent;
-    taskForm['taskAssigned'].value = taskElement.querySelector('.details p:first-child').textContent.split(': ')[1];
+    
+    const assignedText = taskElement.querySelector('.details p:first-child').textContent.split(': ')[1];
+    const assignedValue = Object.keys(userMap).find(key => userMap[key] === assignedText);
+    taskForm['taskAssigned'].value = assignedValue || assignedText;
+
     taskForm['taskPriority'].value = taskElement.querySelector('.priority').textContent.split(': ')[1];
     taskForm['taskStatus'].value = taskElement.closest('.column').id;
     taskForm['taskDeadline'].value = taskElement.querySelector('.deadline').textContent.split(': ')[1];
@@ -74,11 +85,13 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
     taskElement.dataset.id = id;
     taskElement.draggable = true;  // Hacer que la tarea sea draggable
 
+    const assignedName = userMap[assigned] || assigned;
+
     taskElement.innerHTML = `
         <h3>${title}</h3>
         <p class="description">${description}</p>
         <div class="details">
-            <p><strong>Asignado:</strong> ${assigned}</p>
+            <p><strong>Asignado:</strong> ${assignedName}</p>
             <p class="priority ${priority.toLowerCase()}"><strong>Prioridad:</strong> ${priority}</p>
         </div>
         <p class="deadline"><strong>Fecha límite:</strong> ${deadline}</p>
@@ -112,7 +125,7 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
 
         taskElement.querySelector('h3').textContent = title;
         taskElement.querySelector('.description').textContent = description;
-        taskElement.querySelector('.details p:first-child').innerHTML = `<strong>Asignado:</strong> ${assigned}`;
+        taskElement.querySelector('.details p:first-child').innerHTML = `<strong>Asignado:</strong> ${userMap[assigned] || assigned}`;
         taskElement.querySelector('.priority').innerHTML = `<strong>Prioridad:</strong> ${priority}`;
         taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
         taskElement.querySelector('.deadline').innerHTML = `<strong>Fecha límite:</strong> ${deadline}`;
