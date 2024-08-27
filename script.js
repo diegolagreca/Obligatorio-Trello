@@ -81,7 +81,7 @@ let currentTaskId = null;
 function createTaskElement(title, description, assigned, priority, deadline, id = Date.now()) {
     const taskElement = document.createElement('div');
     taskElement.classList.add('box', 'task');
-    
+
     // Asignar clases de color según la prioridad
     const priorityClass = {
         'Low': 'priority-low',
@@ -93,11 +93,24 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
     taskElement.dataset.id = id;
     taskElement.draggable = true;  // Hacer que la tarea sea draggable
 
+    // Definir la imagen de perfil según el usuario asignado
+    const profilePics = {
+        'Persona1': '1.jpg',
+        'Persona2': '3.jpg',
+        'Persona3': '2.jpg'
+    };
+    const profilePic = profilePics[assigned] || '2.jpg';
+
     const assignedName = userMap[assigned] || assigned;
 
     taskElement.innerHTML = `
-        <h3>${title}</h3>
-        <p class="description">${description}</p>
+        <div class="task-header">
+            <img src="${profilePic}" alt="${assignedName}" class="profile-pic">
+            <div class="task-title">
+                <h3>${title}</h3>
+                <p class="description">${description}</p>
+            </div>
+        </div>
         <div class="details">
             <p><strong>Asignado:</strong> ${assignedName}</p>
             <p class="priority ${priority.toLowerCase()}"><strong>Prioridad:</strong> ${priority}</p>
@@ -118,6 +131,7 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
     return taskElement;
 }
 
+
 document.getElementById('saveTaskBtn').addEventListener('click', function(event) {
     event.preventDefault();
     
@@ -128,12 +142,18 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
     const status = taskForm['taskStatus'].value;
     const deadline = taskForm['taskDeadline'].value;
 
-    // Asignar clases de color según la prioridad
     const priorityClass = {
         'Low': 'priority-low',
         'Medium': 'priority-medium',
         'High': 'priority-high'
     }[priority] || 'priority-low';
+
+    const profilePics = {
+        'Persona1': '1.jpg',
+        'Persona2': '3.jpg',
+        'Persona3': '2.jpg'
+    };
+    const profilePic = profilePics[assigned] || '2.jpg';
 
     if (currentTaskId) {
         const taskElement = document.querySelector(`[data-id='${currentTaskId}']`);
@@ -145,9 +165,12 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
         taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
         taskElement.querySelector('.deadline').innerHTML = `<strong>Fecha límite:</strong> ${deadline}`;
 
-        // Remover las clases de color anteriores
+        // Actualizar la imagen de perfil
+        taskElement.querySelector('.profile-pic').src = profilePic;
+        taskElement.querySelector('.profile-pic').alt = userMap[assigned] || assigned;
+
         taskElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
-        taskElement.classList.add(priorityClass); // Añadir la nueva clase de color
+        taskElement.classList.add(priorityClass);
 
         if (taskElement.closest('.column').id !== status) {
             taskColumns[status].appendChild(taskElement);
@@ -161,6 +184,7 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
 
     closeModal();
 });
+
 
 
 // FIN ADD TASKS --------------------------------
