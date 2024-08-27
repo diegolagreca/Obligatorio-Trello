@@ -81,7 +81,15 @@ let currentTaskId = null;
 function createTaskElement(title, description, assigned, priority, deadline, id = Date.now()) {
     const taskElement = document.createElement('div');
     taskElement.classList.add('box', 'task');
-    taskElement.classList.add('notification', 'is-info');
+    
+    // Asignar clases de color según la prioridad
+    const priorityClass = {
+        'Low': 'priority-low',
+        'Medium': 'priority-medium',
+        'High': 'priority-high'
+    }[priority] || 'priority-low'; // Valor predeterminado si no coincide
+
+    taskElement.classList.add(priorityClass); // Añadir la clase de color según la prioridad
     taskElement.dataset.id = id;
     taskElement.draggable = true;  // Hacer que la tarea sea draggable
 
@@ -120,6 +128,13 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
     const status = taskForm['taskStatus'].value;
     const deadline = taskForm['taskDeadline'].value;
 
+    // Asignar clases de color según la prioridad
+    const priorityClass = {
+        'Low': 'priority-low',
+        'Medium': 'priority-medium',
+        'High': 'priority-high'
+    }[priority] || 'priority-low';
+
     if (currentTaskId) {
         const taskElement = document.querySelector(`[data-id='${currentTaskId}']`);
 
@@ -129,6 +144,10 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
         taskElement.querySelector('.priority').innerHTML = `<strong>Prioridad:</strong> ${priority}`;
         taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
         taskElement.querySelector('.deadline').innerHTML = `<strong>Fecha límite:</strong> ${deadline}`;
+
+        // Remover las clases de color anteriores
+        taskElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
+        taskElement.classList.add(priorityClass); // Añadir la nueva clase de color
 
         if (taskElement.closest('.column').id !== status) {
             taskColumns[status].appendChild(taskElement);
@@ -142,6 +161,7 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
 
     closeModal();
 });
+
 
 // FIN ADD TASKS --------------------------------
 
