@@ -15,12 +15,24 @@ const userMap = {
 // Dark/Light Mode
 toggleModeBtn.addEventListener('click', toggleMode);
 function toggleMode(){
-    let actualMode = document.documentElement.getAttribute('data-theme');
+    let currentMode = document.documentElement.getAttribute('data-theme');
 
-    if(actualMode === 'light'){
+    if(currentMode === 'light'){
         document.documentElement.setAttribute('data-theme','dark');
     }else{
         document.documentElement.setAttribute('data-theme','light');
+    }
+}
+
+// Change Background
+backgroundSelector.addEventListener('change', changeBackground);
+function changeBackground(){
+    let selectedBackground = document.getElementById("backgroundSelector").value;
+
+    if(selectedBackground === "Default"){
+        document.getElementById("columnsContainer").style.backgroundImage = "";
+    }else{
+        document.getElementById("columnsContainer").style.backgroundImage = "url('" + selectedBackground + "')";
     }
 }
 
@@ -112,10 +124,19 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
             </div>
         </div>
         <div class="details">
-            <p><strong>Asignado:</strong> ${assignedName}</p>
-            <p class="priority ${priority.toLowerCase()}"><strong>Prioridad:</strong> ${priority}</p>
+            <p>
+                <i class="fa-solid fa-user"></i>
+                <strong>Asignado:</strong> ${assignedName}
+            </p>
+            <p class="priority ${priority.toLowerCase()}">
+                <i class="fa-solid fa-tag"></i>
+                <strong>Prioridad:</strong> ${priority}
+            </p>
         </div>
-        <p class="deadline"><strong>Fecha límite:</strong> ${deadline}</p>
+        <p class="deadline">
+            <i class="fa-solid fa-clock"></i>
+            <strong>Fecha límite:</strong> ${deadline}
+        </p>
     `;
 
     // Evento de arrastrar (dragstart)
@@ -160,10 +181,10 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
 
         taskElement.querySelector('h3').textContent = title;
         taskElement.querySelector('.description').textContent = description;
-        taskElement.querySelector('.details p:first-child').innerHTML = `<strong>Asignado:</strong> ${userMap[assigned] || assigned}`;
-        taskElement.querySelector('.priority').innerHTML = `<strong>Prioridad:</strong> ${priority}`;
+        taskElement.querySelector('.details p:first-child').innerHTML = `<i class="fa-solid fa-user"></i><strong>Asignado:</strong> ${userMap[assigned] || assigned}`;
+        taskElement.querySelector('.priority').innerHTML = `<i class="fa-solid fa-tag"></i><strong>Prioridad:</strong> ${priority}`;
         taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
-        taskElement.querySelector('.deadline').innerHTML = `<strong>Fecha límite:</strong> ${deadline}`;
+        taskElement.querySelector('.deadline').innerHTML = `<i class="fa-solid fa-clock"></i><strong>Fecha límite:</strong> ${deadline}`;
 
         // Actualizar la imagen de perfil
         taskElement.querySelector('.profile-pic').src = profilePic;
