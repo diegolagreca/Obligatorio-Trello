@@ -9,10 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Evita el scroll vertical en toda la página */
+        }
         .tasks {
-        min-height: 50px;
-        width: 100%;
-        height: 100%;
+            min-height: 20vh;
+            width: 100%;
         }
 
         .profile-pic {
@@ -30,7 +35,6 @@
         .task-title {
             flex-grow: 1;
         }
-
 
         .priority-low {
             background-color: #32bb70;
@@ -57,16 +61,36 @@
             white-space: nowrap;
             width: 100%;
             height: 100%;
+            padding-top: 50px; /* Ajusta el espacio para los títulos */
         }
 
         .columns {
             display: flex;
             flex-wrap: nowrap; /* Sin wrapping para resoluciones grandes */
+            height: calc(100vh - 50px); /* Ajusta la altura de las columnas */
         }
 
-        .task-column {
-            height: 80vh; /* Ajusta la altura según sea necesario */
-            overflow-y: hidden; /* No permitir scroll vertical en columnas */
+        .column {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden; /* Oculta el desbordamiento */
+        }
+
+        .tasks-container {
+            flex-grow: 1;
+            overflow-y: auto; /* Permite el desplazamiento vertical */
+            padding-top: 10px; /* Espacio entre el título y las tareas */
+        }
+
+        .column-title {
+            background-color: #ffffff; /* Color de fondo para el título */
+            padding: 10px;
+            margin: 0;
+            z-index: 3; /* Asegura que el título esté sobre la imagen de fondo */
+            position: -webkit-sticky; /* Soporte para Safari */
+            position: sticky;
+            top: 0; /* Fija el título en la parte superior */
         }
 
         @media screen and (max-width: 768px) {
@@ -119,24 +143,34 @@
         <div id="columnsContainer" class="columns-container">
             <div class="columns is-variable is-1-mobile is-2-tablet is-3-desktop is-4-widescreen is-5-fullhd">
                 <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="backlog">
-                    <h4 class="title is-4">Backlog</h4>
-                    <div class="tasks"></div>
+                    <h4 class="title is-4 column-title">Backlog</h4>
+                    <div class="tasks-container">
+                        <div class="tasks"></div>
+                    </div>
                 </div>
                 <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="todo">
-                    <h4 class="title is-4">To-Do</h4>
-                    <div class="tasks"></div>
+                    <h4 class="title is-4 column-title">To-Do</h4>
+                    <div class="tasks-container">
+                        <div class="tasks"></div>
+                    </div>
                 </div>
                 <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="in-progress">
-                    <h4 class="title is-4">In-Progress</h4>
-                    <div class="tasks"></div>
+                    <h4 class="title is-4 column-title">In-Progress</h4>
+                    <div class="tasks-container">
+                        <div class="tasks"></div>
+                    </div>
                 </div>
                 <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="blocked">
-                    <h4 class="title is-4">Blocked</h4>
-                    <div class="tasks"></div>
+                    <h4 class="title is-4 column-title">Blocked</h4>
+                    <div class="tasks-container">
+                        <div class="tasks"></div>
+                    </div>
                 </div>
                 <div class="column is-full-mobile is-half-tablet is-one-fifth-desktop task-column" id="done">
-                    <h4 class="title is-4">Done</h4>
-                    <div class="tasks"></div>
+                    <h4 class="title is-4 column-title">Done</h4>
+                    <div class="tasks-container">
+                        <div class="tasks"></div>
+                    </div>
                 </div>
             </div>
         </div>
