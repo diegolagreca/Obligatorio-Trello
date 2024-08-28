@@ -93,6 +93,12 @@
             top: 0; /* Fija el título en la parte superior */
         }
 
+        /* Estilos para el modo oscuro */
+        [data-theme="dark"] .column-title {
+            color: #ffffff; /* Color de las letras en modo oscuro */
+            background-color: #333333; /* Color de fondo en modo oscuro */
+        }
+
         @media screen and (max-width: 768px) {
             .columns {
                 flex-wrap: wrap; /* En resoluciones más pequeñas, las columnas se envuelven */
@@ -107,12 +113,6 @@
 
             .task-column {
                 width: 100%; /* Cada columna ocupa todo el ancho */
-            }
-
-            #addTaskBtn {
-                position: absolute;
-                bottom: 20px;
-                right: 20px;
             }
         }
     </style>
