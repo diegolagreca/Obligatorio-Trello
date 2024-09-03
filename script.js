@@ -5,6 +5,102 @@ const cancelTaskButton = document.getElementById('cancelTaskBtn');
 const taskForm = document.getElementById('taskForm');
 const toggleModeBtn = document.getElementById('toggleModeBtn');
 
+const serverURL = "http://localhost:3000/api/tasks/";
+
+async function getAllTasks() {
+    try {
+        const response = await fetch(serverURL);
+
+        // Check if the request was successful
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Parse JSON response
+        const tasks = await response.json();
+        console.log(tasks);
+        return tasks;
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+    }
+}
+
+// Obtenemos la info de todas las tasks
+getAllTasks();
+
+function renderTasks() {
+
+    let taskArray = getAllTasks();
+
+
+    /*
+        ejemplo output
+        "id": "1",
+        "title": "Task 1",
+        "description": "Description for Task 1",
+        "assignedTo": "Rodrigo Lujambio",
+        "startDate": "01/01/2024",
+        "endDate": "31/12/2024",
+        "status": "To Do",
+        "priority": "Low",
+        "comments": []
+    */
+
+    for (let i = 0; i < taskArray.lenght; i++) {
+
+        const title = taskArray['title'].value;
+        const description = taskArray['description'].value;
+        const assigned = taskArray['assignedTo'].value;
+        const priority = taskArray['priority'].value;
+        const status = taskArray['status'].value;
+
+        const priorityClass = {
+            'Low': 'priority-low',
+            'Medium': 'priority-medium',
+            'High': 'priority-high'
+        }[priority] || 'priority-low';
+
+        const profilePics = {
+            'Persona1': '1.jpg',
+            'Persona2': '3.jpg',
+            'Persona3': '2.jpg'
+        };
+        const profilePic = profilePics[assigned] || '2.jpg';
+
+        if (currentTaskId) {
+            const taskElement = document.querySelector(`[data-id='${currentTaskId}']`);
+
+            taskElement.querySelector('h3').textContent = title;
+            taskElement.querySelector('.description').textContent = description;
+            taskElement.querySelector('.details p:first-child').innerHTML = `<i class="fa-solid fa-user"></i><strong>Asignado:</strong> ${userMap[assigned] || assigned}`;
+            taskElement.querySelector('.priority').innerHTML = `<i class="fa-solid fa-tag"></i><strong>Prioridad:</strong> ${priority}`;
+            taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
+            taskElement.querySelector('.deadline').innerHTML = `<i class="fa-solid fa-clock"></i><strong>Fecha límite:</strong> ${deadline}`;
+
+            // Actualizar la imagen de perfil
+            taskElement.querySelector('.profile-pic').src = profilePic;
+            taskElement.querySelector('.profile-pic').alt = userMap[assigned] || assigned;
+
+            taskElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
+            taskElement.classList.add(priorityClass);
+
+            if (taskElement.closest('.column').id !== status) {
+                taskColumns[status].appendChild(taskElement);
+            }
+
+            currentTaskId = null;
+        } else {
+            const newTask = createTaskElement(title, description, assigned, priority, deadline);
+            taskColumns[status].appendChild(newTask);
+        }
+
+
+    }
+
+
+
+}
+
 // Mapa de conversiones de valores a nombres visibles
 const userMap = {
     "Persona1": "Juan",
@@ -14,24 +110,24 @@ const userMap = {
 
 // Dark/Light Mode
 toggleModeBtn.addEventListener('click', toggleMode);
-function toggleMode(){
+function toggleMode() {
     let currentMode = document.documentElement.getAttribute('data-theme');
 
-    if(currentMode === 'light'){
-        document.documentElement.setAttribute('data-theme','dark');
-    }else{
-        document.documentElement.setAttribute('data-theme','light');
+    if (currentMode === 'light') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
     }
 }
 
 // Change Background
 backgroundSelector.addEventListener('change', changeBackground);
-function changeBackground(){
+function changeBackground() {
     let selectedBackground = document.getElementById("backgroundSelector").value;
 
-    if(selectedBackground === "Default"){
+    if (selectedBackground === "Default") {
         document.getElementById("columnsContainer").style.backgroundImage = "";
-    }else{
+    } else {
         document.getElementById("columnsContainer").style.backgroundImage = "url('" + selectedBackground + "')";
     }
 }
@@ -61,7 +157,7 @@ function openEditModal(taskId) {
     // Cargar la información de la tarea en los campos del formulario
     taskForm['taskTitle'].value = taskElement.querySelector('h3').textContent;
     taskForm['taskDescription'].value = taskElement.querySelector('.description').textContent;
-    
+
     const assignedText = taskElement.querySelector('.details p:first-child').textContent.split(': ')[1];
     const assignedValue = Object.keys(userMap).find(key => userMap[key] === assignedText);
     taskForm['taskAssigned'].value = assignedValue || assignedText;
@@ -140,12 +236,12 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
     `;
 
     // Evento de arrastrar (dragstart)
-    taskElement.addEventListener('dragstart', function(event) {
+    taskElement.addEventListener('dragstart', function (event) {
         event.dataTransfer.setData('text/plain', id); // Guardar el id de la tarea arrastrada
     });
 
     // Evento de clic para editar la tarea
-    taskElement.addEventListener('click', function() {
+    taskElement.addEventListener('click', function () {
         openEditModal(id);
     });
 
@@ -153,9 +249,9 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
 }
 
 
-document.getElementById('saveTaskBtn').addEventListener('click', function(event) {
+document.getElementById('saveTaskBtn').addEventListener('click', function (event) {
     event.preventDefault();
-    
+
     const title = taskForm['taskTitle'].value;
     const description = taskForm['taskDescription'].value;
     const assigned = taskForm['taskAssigned'].value;
@@ -214,11 +310,11 @@ document.getElementById('saveTaskBtn').addEventListener('click', function(event)
 Object.keys(taskColumns).forEach(status => {
     const column = taskColumns[status];
 
-    column.addEventListener('dragover', function(event) {
+    column.addEventListener('dragover', function (event) {
         event.preventDefault();
     });
 
-    column.addEventListener('drop', function(event) {
+    column.addEventListener('drop', function (event) {
         event.preventDefault();
 
         const taskId = event.dataTransfer.getData('text/plain');
