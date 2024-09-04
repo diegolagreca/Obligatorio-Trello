@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-
-        body, html {
+        body,
+        html {
             height: 100%;
             margin: 0;
-            overflow: hidden; /* Evita el scroll vertical en toda la página */
+            overflow: hidden;
+            /* Evita el scroll vertical en toda la página */
         }
+
         .tasks {
             min-height: 20vh;
             width: 100%;
@@ -56,19 +58,24 @@
         }
 
         .columns-container {
-            overflow-x: auto; /* Permitir scroll horizontal */
-            overflow-y: hidden; /* No permitir scroll vertical */
+            overflow-x: auto;
+            /* Permitir scroll horizontal */
+            overflow-y: hidden;
+            /* No permitir scroll vertical */
             white-space: nowrap;
             width: 100%;
             height: 100%;
-            padding-top: 50px; /* Ajusta el espacio para los títulos */
+            padding-top: 50px;
+            /* Ajusta el espacio para los títulos */
             border-radius: 25px;
         }
 
         .columns {
             display: flex;
-            flex-wrap: nowrap; /* Sin wrapping para resoluciones grandes */
-            height: calc(100vh - 50px); /* Ajusta la altura de las columnas */
+            flex-wrap: nowrap;
+            /* Sin wrapping para resoluciones grandes */
+            height: calc(100vh - 50px);
+            /* Ajusta la altura de las columnas */
             margin: 2px;
         }
 
@@ -76,46 +83,59 @@
             display: flex;
             flex-direction: column;
             flex: 1;
-            overflow: hidden; /* Oculta el desbordamiento */
+            overflow: hidden;
+            /* Oculta el desbordamiento */
         }
 
         .tasks-container {
             flex-grow: 1;
-            overflow-y: auto; /* Permite el desplazamiento vertical */
-            padding-top: 10px; /* Espacio entre el título y las tareas */
+            overflow-y: auto;
+            /* Permite el desplazamiento vertical */
+            padding-top: 10px;
+            /* Espacio entre el título y las tareas */
         }
 
         .column-title {
-            background-color: #ffffff; /* Color de fondo para el título */
+            background-color: #ffffff;
+            /* Color de fondo para el título */
             padding: 10px;
             margin: 0;
-            z-index: 3; /* Asegura que el título esté sobre la imagen de fondo */
-            position: -webkit-sticky; /* Soporte para Safari */
+            z-index: 3;
+            /* Asegura que el título esté sobre la imagen de fondo */
+            position: -webkit-sticky;
+            /* Soporte para Safari */
             position: sticky;
-            top: 0; /* Fija el título en la parte superior */
+            top: 0;
+            /* Fija el título en la parte superior */
             border-radius: 25px;
         }
 
         /* Estilos para el modo oscuro */
         [data-theme="dark"] .column-title {
-            color: #ffffff; /* Color de las letras en modo oscuro */
-            background-color: #333333; /* Color de fondo en modo oscuro */
+            color: #ffffff;
+            /* Color de las letras en modo oscuro */
+            background-color: #333333;
+            /* Color de fondo en modo oscuro */
         }
 
         @media screen and (max-width: 768px) {
             .columns {
-                flex-wrap: wrap; /* En resoluciones más pequeñas, las columnas se envuelven */
+                flex-wrap: wrap;
+                /* En resoluciones más pequeñas, las columnas se envuelven */
             }
         }
 
         @media screen and (max-width: 425px) {
             .columns-container {
-                overflow-x: auto; /* Scroll horizontal */
-                overflow-y: hidden; /* No permitir scroll vertical */
+                overflow-x: auto;
+                /* Scroll horizontal */
+                overflow-y: hidden;
+                /* No permitir scroll vertical */
             }
 
             .task-column {
-                width: 100%; /* Cada columna ocupa todo el ancho */
+                width: 100%;
+                /* Cada columna ocupa todo el ancho */
             }
         }
     </style>
@@ -124,7 +144,7 @@
 <body class="has-text-centered">
     <div class="container">
         <h2 class="title is-size-2">Gestor de Tareas</h2>
-        
+
         <button class="button fa-solid fa-circle-half-stroke is-pulled-right" id="toggleModeBtn"></button>
 
         <div class="select is-small is-pulled-right">
@@ -204,13 +224,7 @@
                         <div class="field">
                             <label class="label">Asignado a</label>
                             <div class="control">
-                                <div class="select">
-                                    <select id="taskAssigned">
-                                        <option value="Persona1">Juan</option>
-                                        <option value="Persona2">Diego</option>
-                                        <option value="Persona3">Álvaro</option>
-                                    </select>
-                                </div>
+                                <input type="text" class="input" id="taskAssigned">
                             </div>
                         </div>
 

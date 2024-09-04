@@ -41,7 +41,7 @@ async function renderTasks() {
 
         let title = task.title;
         let description = task.description;
-        let assigned = task.assigned;
+        let assigned = task.assignedTo;
         let priority = task.priority;
         let status = task.status;
         let deadline = task.endDate;
@@ -74,15 +74,6 @@ async function renderTasks() {
 }
 
 renderTasks();
-
-
-
-// Mapa de conversiones de valores a nombres visibles
-const userMap = {
-    "Persona1": "Juan",
-    "Persona2": "Diego",
-    "Persona3": "Álvaro"
-};
 
 // Dark/Light Mode
 toggleModeBtn.addEventListener('click', toggleMode);
@@ -185,11 +176,9 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
     };
     const profilePic = profilePics[assigned] || '2.jpg';
 
-    const assignedName = userMap[assigned] || assigned;
-
     taskElement.innerHTML = `
         <div class="task-header">
-            <img src="${profilePic}" alt="${assignedName}" class="profile-pic">
+            <img src="${profilePic}" alt="${assigned}" class="profile-pic">
             <div class="task-title">
                 <h3>${title}</h3>
                 <p class="description">${description}</p>
@@ -198,7 +187,7 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
         <div class="details">
             <p>
                 <i class="fa-solid fa-user"></i>
-                <strong>Asignado:</strong> ${assignedName}
+                <strong>Asignado:</strong> ${assigned}
             </p>
             <p class="priority ${priority.toLowerCase()}">
                 <i class="fa-solid fa-tag"></i>
