@@ -9,7 +9,7 @@ const serverURL = "http://localhost:3000/api/tasks/";
 
 async function getAllTasks() {
     try {
-        const response = await fetch(serverURL);
+        const response = await fetch(serverURL, { method: 'GET' });
 
         // Check if the request was successful
         if (!response.ok) {
@@ -19,6 +19,8 @@ async function getAllTasks() {
         // Parse JSON response
         const tasks = await response.json();
         console.log(tasks);
+
+
         return tasks;
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -26,80 +28,54 @@ async function getAllTasks() {
 }
 
 // Obtenemos la info de todas las tasks
-getAllTasks();
-
-function renderTasks() {
-
-    let taskArray = getAllTasks();
+//getAllTasks();
 
 
-    /*
-        ejemplo output
-        "id": "1",
-        "title": "Task 1",
-        "description": "Description for Task 1",
-        "assignedTo": "Rodrigo Lujambio",
-        "startDate": "01/01/2024",
-        "endDate": "31/12/2024",
-        "status": "To Do",
-        "priority": "Low",
-        "comments": []
-    */
+async function renderTasks() {
 
-    for (let i = 0; i < taskArray.lenght; i++) {
+    let taskArray = await getAllTasks();
 
-        const title = taskArray['title'].value;
-        const description = taskArray['description'].value;
-        const assigned = taskArray['assignedTo'].value;
-        const priority = taskArray['priority'].value;
-        const status = taskArray['status'].value;
+    for (let i = 0; i < taskArray.length; i++) {
 
-        const priorityClass = {
-            'Low': 'priority-low',
-            'Medium': 'priority-medium',
-            'High': 'priority-high'
-        }[priority] || 'priority-low';
+        let task = taskArray[i];
 
-        const profilePics = {
-            'Persona1': '1.jpg',
-            'Persona2': '3.jpg',
-            'Persona3': '2.jpg'
-        };
-        const profilePic = profilePics[assigned] || '2.jpg';
+        let title = task.title;
+        let description = task.description;
+        let assigned = task.assigned;
+        let priority = task.priority;
+        let status = task.status;
+        let deadline = task.endDate;
+        let id = task.id;
 
-        if (currentTaskId) {
-            const taskElement = document.querySelector(`[data-id='${currentTaskId}']`);
+        let newTask = createTaskElement(title, description, assigned, priority, deadline, id);
 
-            taskElement.querySelector('h3').textContent = title;
-            taskElement.querySelector('.description').textContent = description;
-            taskElement.querySelector('.details p:first-child').innerHTML = `<i class="fa-solid fa-user"></i><strong>Asignado:</strong> ${userMap[assigned] || assigned}`;
-            taskElement.querySelector('.priority').innerHTML = `<i class="fa-solid fa-tag"></i><strong>Prioridad:</strong> ${priority}`;
-            taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
-            taskElement.querySelector('.deadline').innerHTML = `<i class="fa-solid fa-clock"></i><strong>Fecha límite:</strong> ${deadline}`;
+        // taskcolumn no existe en este contexto
 
-            // Actualizar la imagen de perfil
-            taskElement.querySelector('.profile-pic').src = profilePic;
-            taskElement.querySelector('.profile-pic').alt = userMap[assigned] || assigned;
-
-            taskElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
-            taskElement.classList.add(priorityClass);
-
-            if (taskElement.closest('.column').id !== status) {
-                taskColumns[status].appendChild(taskElement);
-            }
-
-            currentTaskId = null;
-        } else {
-            const newTask = createTaskElement(title, description, assigned, priority, deadline);
-            taskColumns[status].appendChild(newTask);
+        let parsedStatus = "";
+        switch (status) {
+            case "Backlog": parsedStatus = "backlog";
+                break;
+            case "In Progress": parsedStatus = "in-progress";
+                break;
+            case "To Do": parsedStatus = "todo";
+                break;
+            case "Blocked": parsedStatus = "blocked";
+                break;
+            case "Done": parsedStatus = "done";
+                break;
+            default:
+                console.log("no status :(");
         }
 
+        taskColumns[parsedStatus].appendChild(newTask);
 
     }
 
-
-
 }
+
+renderTasks();
+
+
 
 // Mapa de conversiones de valores a nombres visibles
 const userMap = {
@@ -176,7 +152,7 @@ function openEditModal(taskId) {
 // Fin MODAL --------------------------------
 
 // Inicio ADD TASKS --------------------------------
-const taskColumns = {
+let taskColumns = {
     backlog: document.getElementById('backlog').querySelector('.tasks'),
     todo: document.getElementById('todo').querySelector('.tasks'),
     'in-progress': document.getElementById('in-progress').querySelector('.tasks'),
