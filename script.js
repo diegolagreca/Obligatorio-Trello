@@ -7,6 +7,49 @@ const toggleModeBtn = document.getElementById('toggleModeBtn');
 
 const serverURL = "http://localhost:3000/api/tasks/";
 
+renderTasks();
+
+// metodo post
+async function postNewTask(title, description, assigned, deadline, status, priority) {
+    // Crear el objeto con los datos de la tarea
+    const newTask = {
+        title: title,
+        description: description,
+        assignedTo: assigned,
+        endDate: deadline,
+        status: status,
+        priority: priority
+    };
+
+    try {
+        // Realizar la solicitud POST usando fetch
+        const response = await fetch(serverURL, {
+            method: "POST",  // Método HTTP POST
+            headers: {
+                "Content-Type": "application/json"  // Especificamos que el contenido es JSON
+            },
+            body: JSON.stringify(newTask)  // Convertimos el objeto JavaScript a un string JSON
+        });
+
+        // Verificar si la solicitud fue exitosa
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Obtener la respuesta del servidor
+        const result = await response.json();
+        console.log("Task created successfully:", result);
+
+    } catch (error) {
+        console.error("Error creating new task:", error);
+    }
+}
+
+// metodo put
+function updateTask(id, title, description, assigned, priority, deadline) {
+
+}
+
 async function getAllTasks() {
     try {
         const response = await fetch(serverURL, { method: 'GET' });
@@ -47,7 +90,7 @@ async function renderTasks() {
         let deadline = task.endDate;
         let id = task.id;
 
-        let newTask = createTaskElement(title, description, assigned, priority, deadline, id);
+        let newTask = createTaskElement(title, description, assigned, priority, deadline, status, id);
 
         // taskcolumn no existe en este contexto
 
@@ -73,7 +116,6 @@ async function renderTasks() {
 
 }
 
-renderTasks();
 
 // Dark/Light Mode
 toggleModeBtn.addEventListener('click', toggleMode);
@@ -125,9 +167,7 @@ function openEditModal(taskId) {
     taskForm['taskTitle'].value = taskElement.querySelector('h3').textContent;
     taskForm['taskDescription'].value = taskElement.querySelector('.description').textContent;
 
-    const assignedText = taskElement.querySelector('.details p:first-child').textContent.split(': ')[1];
-    const assignedValue = Object.keys(userMap).find(key => userMap[key] === assignedText);
-    taskForm['taskAssigned'].value = assignedValue || assignedText;
+    taskForm['taskAssigned'].value = taskElement.querySelector('.assigned').textContent.split(': ')[1];
 
     taskForm['taskPriority'].value = taskElement.querySelector('.priority').textContent.split(': ')[1];
     taskForm['taskStatus'].value = taskElement.closest('.column').id;
@@ -153,7 +193,7 @@ let taskColumns = {
 
 let currentTaskId = null;
 
-function createTaskElement(title, description, assigned, priority, deadline, id = Date.now()) {
+function createTaskElement(title, description, assigned, priority, deadline, status, id = Date.now()) {
     const taskElement = document.createElement('div');
     taskElement.classList.add('box', 'task');
 
@@ -210,6 +250,7 @@ function createTaskElement(title, description, assigned, priority, deadline, id 
         openEditModal(id);
     });
 
+    postNewTask(title, description, assigned, deadline, status, priority);
     return taskElement;
 }
 
@@ -242,14 +283,14 @@ document.getElementById('saveTaskBtn').addEventListener('click', function (event
 
         taskElement.querySelector('h3').textContent = title;
         taskElement.querySelector('.description').textContent = description;
-        taskElement.querySelector('.details p:first-child').innerHTML = `<i class="fa-solid fa-user"></i><strong>Asignado:</strong> ${userMap[assigned] || assigned}`;
+        taskElement.querySelector('.details p:first-child').innerHTML = `<i class="fa-solid fa-user"></i><strong>Asignado:</strong> ${assigned}`;
         taskElement.querySelector('.priority').innerHTML = `<i class="fa-solid fa-tag"></i><strong>Prioridad:</strong> ${priority}`;
         taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
         taskElement.querySelector('.deadline').innerHTML = `<i class="fa-solid fa-clock"></i><strong>Fecha límite:</strong> ${deadline}`;
 
         // Actualizar la imagen de perfil
         taskElement.querySelector('.profile-pic').src = profilePic;
-        taskElement.querySelector('.profile-pic').alt = userMap[assigned] || assigned;
+        taskElement.querySelector('.profile-pic').alt = assigned;
 
         taskElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
         taskElement.classList.add(priorityClass);
@@ -260,8 +301,9 @@ document.getElementById('saveTaskBtn').addEventListener('click', function (event
 
         currentTaskId = null;
     } else {
-        const newTask = createTaskElement(title, description, assigned, priority, deadline);
+        const newTask = createTaskElement(title, description, assigned, priority, deadline, status);
         taskColumns[status].appendChild(newTask);
+        console.log("crear nueva")
     }
 
     closeModal();
@@ -289,3 +331,4 @@ Object.keys(taskColumns).forEach(status => {
     });
 });
 // Fin DRAG AND DROP --------------------------------
+
