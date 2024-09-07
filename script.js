@@ -127,8 +127,8 @@ async function renderTasks() {
                     console.log("no status :(");
             }
 
-            if (parsedStatus) { 
-                let newTask = renderTaskElement(title, description, assigned, priority, deadline, status, id); 
+            if (parsedStatus) {
+                let newTask = renderTaskElement(title, description, assigned, priority, deadline, status, id);
                 taskColumns[parsedStatus].appendChild(newTask);
             }
         }
@@ -242,15 +242,30 @@ function openEditModal(taskId) {
     currentTaskId = taskId; // Almacena el ID de la tarea que se está editando
     const taskElement = document.querySelector(`[data-id='${taskId}']`);
 
-    // Cargar la información de la tarea en los campos del formulario
-    taskForm['taskTitle'].value = taskElement.querySelector('h3').textContent;
-    taskForm['taskDescription'].value = taskElement.querySelector('.description').textContent;
+    if (!taskElement) {
+        console.error("No se encontró el elemento de la tarea con ID:", taskId);
+        return;
+    }
 
-    taskForm['taskAssigned'].value = taskElement.querySelector('.assigned').textContent.split(': ')[1];
+    // Verificar que todos los elementos existen antes de acceder a sus propiedades
+    const titleElement = taskElement.querySelector('h3');
+    const descriptionElement = taskElement.querySelector('.description');
+    const assignedElement = taskElement.querySelector('.details p:first-child');
+    const priorityElement = taskElement.querySelector('.priority');
+    const deadlineElement = taskElement.querySelector('.deadline');
 
-    taskForm['taskPriority'].value = taskElement.querySelector('.priority').textContent.split(': ')[1];
-    taskForm['taskStatus'].value = taskElement.closest('.column').id;
-    taskForm['taskDeadline'].value = taskElement.querySelector('.deadline').textContent.split(': ')[1];
+    if (titleElement && descriptionElement && assignedElement && priorityElement && deadlineElement) {
+        // Cargar la información de la tarea en los campos del formulario
+        taskForm['taskTitle'].value = titleElement.textContent;
+        taskForm['taskDescription'].value = descriptionElement.textContent;
+        taskForm['taskAssigned'].value = assignedElement.textContent.split(': ')[1];
+        taskForm['taskPriority'].value = priorityElement.textContent.split(': ')[1];
+        taskForm['taskStatus'].value = taskElement.closest('.column').id;
+        taskForm['taskDeadline'].value = deadlineElement.textContent.split(': ')[1];
+    } else {
+        console.error("Error al cargar la información de la tarea. Verifica los selectores.");
+        return;
+    }
 
     // Cambiar el título del modal para indicar que es una edición
     document.querySelector('.modal-card-title').textContent = 'Editar Tarea';
@@ -258,6 +273,8 @@ function openEditModal(taskId) {
     // Abrir el modal
     taskModal.classList.add('is-active');
 }
+
+
 
 // Fin MODAL --------------------------------
 
@@ -321,12 +338,17 @@ function createTaskElement(title, description, assigned, priority, deadline, sta
         openEditModal(id);
     });
 
+    // Evento de clic para editar la tarea
+    taskElement.addEventListener('click', function () {
+        openEditModal(id);  // Abrir el modal para editar
+    });
+
     postNewTask(title, description, assigned, deadline, status, priority);
     return taskElement;
 }
 
 
-document.getElementById('saveTaskBtn').addEventListener('click', function (event) {
+document.getElementById('saveTaskBtn').addEventListener('click', async function (event) {
     event.preventDefault();
 
     const title = taskForm['taskTitle'].value;
@@ -336,22 +358,27 @@ document.getElementById('saveTaskBtn').addEventListener('click', function (event
     const status = taskForm['taskStatus'].value;
     const deadline = taskForm['taskDeadline'].value;
 
-    const priorityClass = {
-        'Low': 'priority-low',
-        'Medium': 'priority-medium',
-        'High': 'priority-high'
-    }[priority] || 'priority-low';
-
-    const profilePics = {
-        'Persona1': '1.jpg',
-        'Persona2': '3.jpg',
-        'Persona3': '2.jpg'
-    };
-    const profilePic = profilePics[assigned] || '2.jpg';
-
     if (currentTaskId) {
-        const taskElement = document.querySelector(`[data-id='${currentTaskId}']`);
+        // Enviar una solicitud PATCH para actualizar la tarea
+        await updateTask(currentTaskId, title, description, assigned, priority, deadline, status);
 
+        // Actualizar el DOM después de un PATCH exitoso
+        updateTaskInDOM(currentTaskId, title, description, assigned, priority, deadline, status);
+    } else {
+        // Crear una nueva tarea
+        const newTask = createTaskElement(title, description, assigned, priority, deadline, status);
+        taskColumns[status].appendChild(newTask);
+        console.log("crear nueva");
+    }
+
+    closeModal();
+});
+
+function updateTaskInDOM(id, title, description, assigned, priority, deadline, status) {
+    const taskElement = document.querySelector(`[data-id='${id}']`);
+
+    if (taskElement) {
+        // Actualizar los elementos del DOM con los nuevos valores
         taskElement.querySelector('h3').textContent = title;
         taskElement.querySelector('.description').textContent = description;
         taskElement.querySelector('.details p:first-child').innerHTML = `<i class="fa-solid fa-user"></i><strong>Asignado:</strong> ${assigned}`;
@@ -359,27 +386,50 @@ document.getElementById('saveTaskBtn').addEventListener('click', function (event
         taskElement.querySelector('.priority').className = `priority ${priority.toLowerCase()}`;
         taskElement.querySelector('.deadline').innerHTML = `<i class="fa-solid fa-clock"></i><strong>Fecha límite:</strong> ${deadline}`;
 
-        // Actualizar la imagen de perfil
-        taskElement.querySelector('.profile-pic').src = profilePic;
-        taskElement.querySelector('.profile-pic').alt = assigned;
+        // Mover la tarea a la nueva columna si el estado ha cambiado
+        const currentColumn = taskElement.closest('.tasks');
+        const newColumn = taskColumns[status];
+        if (currentColumn !== newColumn) {
+            newColumn.appendChild(taskElement);
+        }
+    } else {
+        console.error("No se pudo encontrar la tarea en el DOM para actualizarla.");
+    }
+}
 
-        taskElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
-        taskElement.classList.add(priorityClass);
+async function updateTask(id, title, description, assigned, priority, deadline, status) {
+    const updatedTask = {
+        title: title,
+        description: description,
+        assignedTo: assigned,
+        priority: priority,
+        endDate: deadline,
+        status: status
+    };
 
-        if (taskElement.closest('.column').id !== status) {
-            taskColumns[status].appendChild(taskElement);
+    try {
+        const response = await fetch(`${serverURL}${id}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedTask)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        currentTaskId = null;
-    } else {
-        const newTask = createTaskElement(title, description, assigned, priority, deadline, status);
-        taskColumns[status].appendChild(newTask);
-        console.log("crear nueva")
-        //postNewTask(title,description,assigned,deadline,status,priorityClass);
-    }
+        const result = await response.json();
+        console.log("Task updated successfully:", result);
+        return result;  // Devolver el resultado si necesitas más acciones
 
-    closeModal();
-});
+    } catch (error) {
+        console.error("Error updating task:", error);
+    }
+}
+
+
 
 
 
@@ -455,27 +505,64 @@ async function updateTask(id, title, description, assigned, priority, deadline, 
 
     try {
         // Realizar la solicitud PATCH usando fetch
-        const response = await fetch(`${serverURL}${id}`, { // Asegurar que la URL tenga el ID correcto
-            method: "PATCH",  // Método HTTP PATCH
+        const response = await fetch(`${serverURL}${id}`, { 
+            method: "PATCH",  // 
             headers: {
-                "Content-Type": "application/json"  // Especificamos que el contenido es JSON
+                "Content-Type": "application/json"  
             },
-            body: JSON.stringify(updatedTask)  // Convertimos el objeto JavaScript a un string JSON
+            body: JSON.stringify(updatedTask)  /
         });
 
         // Verificar si la solicitud fue exitosa
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        // Obtener la respuesta del servidor
         const result = await response.json();
         console.log("Task updated successfully:", result);
-
-        // Actualizar el DOM o realizar otras acciones necesarias
 
     } catch (error) {
         console.error("Error updating task:", error);
     }
 }
 
+document.getElementById('deleteTaskBtn').addEventListener('click', async function (event) {
+    event.preventDefault();
+    
+    if (currentTaskId) {
+        const confirmation = confirm("¿Está seguro de que quiere eliminar esta tarea?");
+        if (confirmation) {
+            await deleteTask(currentTaskId);
+            deleteTaskFromDOM(currentTaskId);
+            // Cerrar el modal
+            closeModal();
+        }
+    }
+});
+async function deleteTask(id) {
+    try {
+        const response = await fetch(`${serverURL}${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log("Task deleted successfully.");
+
+    } catch (error) {
+        console.error("Error deleting task:", error);
+    }
+}
+function deleteTaskFromDOM(id) {
+    const taskElement = document.querySelector(`[data-id='${id}']`);
+    if (taskElement) {
+        taskElement.remove();
+        console.log("Task removed from the DOM.");
+    } else {
+        console.error("No se pudo encontrar la tarea en el DOM para eliminarla.");
+    }
+}
