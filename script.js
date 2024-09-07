@@ -85,7 +85,7 @@ async function getAllTasks() {
 }
 
 
-
+//Arreglo de persistencia de neuvas tareas en el DOM y duplicado de tareas tras recargar la página
 async function renderTasks() {
     let taskArray = await getAllTasks(); // Obtener todas las tareas del servidor
 
@@ -389,18 +389,93 @@ document.getElementById('saveTaskBtn').addEventListener('click', function (event
 Object.keys(taskColumns).forEach(status => {
     const column = taskColumns[status];
 
+    // Evento de "dragover" para permitir el "drop"
     column.addEventListener('dragover', function (event) {
         event.preventDefault();
     });
 
+    // Evento de "drop" para manejar el movimiento de tareas
     column.addEventListener('drop', function (event) {
         event.preventDefault();
 
         const taskId = event.dataTransfer.getData('text/plain');
         const taskElement = document.querySelector(`[data-id='${taskId}']`);
 
+        // Mover el elemento de la tarea a la nueva columna
         column.appendChild(taskElement);
+
+        // Actualizar el "status" de la tarea en el backend
+        const newStatus = status;  // El nuevo status es el ID de la columna de destino
+        updateTaskStatus(taskId, newStatus);  // Llamar a la función para hacer PATCH
     });
 });
+
+// Función para actualizar el "status" de la tarea con un PATCH
+async function updateTaskStatus(taskId, newStatus) {
+    try {
+        const response = await fetch(`${serverURL}${taskId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: newStatus })  // Solo actualizar el campo "status"
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Task status updated successfully:", result);
+
+    } catch (error) {
+        console.error("Error updating task status:", error);
+    }
+}
+
 // Fin DRAG AND DROP --------------------------------
+
+// Función para actualizar una tarea
+async function updateTask(id, title, description, assigned, priority, deadline, status) {
+    // Verificar que el ID no sea undefined o vacío
+    if (!id) {
+        console.error("Task ID is missing or invalid.");
+        return;
+    }
+
+    // Crear el objeto con los datos de la tarea que deseas actualizar
+    const updatedTask = {
+        title: title,
+        description: description,
+        assignedTo: assigned,
+        priority: priority,
+        endDate: deadline,
+        status: status
+    };
+
+    try {
+        // Realizar la solicitud PATCH usando fetch
+        const response = await fetch(`${serverURL}${id}`, { // Asegurar que la URL tenga el ID correcto
+            method: "PATCH",  // Método HTTP PATCH
+            headers: {
+                "Content-Type": "application/json"  // Especificamos que el contenido es JSON
+            },
+            body: JSON.stringify(updatedTask)  // Convertimos el objeto JavaScript a un string JSON
+        });
+
+        // Verificar si la solicitud fue exitosa
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Obtener la respuesta del servidor
+        const result = await response.json();
+        console.log("Task updated successfully:", result);
+
+        // Actualizar el DOM o realizar otras acciones necesarias
+
+    } catch (error) {
+        console.error("Error updating task:", error);
+    }
+}
 
