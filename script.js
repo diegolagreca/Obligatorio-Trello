@@ -7,6 +7,18 @@ const toggleModeBtn = document.getElementById('toggleModeBtn');
 
 const serverURL = "http://localhost:3000/api/tasks/";
 
+
+// Inicio ADD TASKS --------------------------------
+let taskColumns = {
+    backlog: document.getElementById('backlog').querySelector('.tasks'),
+    todo: document.getElementById('todo').querySelector('.tasks'),
+    'in-progress': document.getElementById('in-progress').querySelector('.tasks'),
+    blocked: document.getElementById('blocked').querySelector('.tasks'),
+    done: document.getElementById('done').querySelector('.tasks')
+};
+
+
+
 renderTasks();
 
 // metodo post
@@ -20,6 +32,8 @@ async function postNewTask(title, description, assigned, deadline, status, prior
         status: status,
         priority: priority
     };
+    console.log("paso 1");
+    console.log(newTask);
 
     try {
         // Realizar la solicitud POST usando fetch
@@ -70,18 +84,13 @@ async function getAllTasks() {
     }
 }
 
-// Obtenemos la info de todas las tasks
-//getAllTasks();
 
 
 async function renderTasks() {
-
-    let taskArray = await getAllTasks();
+    let taskArray = await getAllTasks(); // Obtener todas las tareas del servidor
 
     for (let i = 0; i < taskArray.length; i++) {
-
         let task = taskArray[i];
-
         let title = task.title;
         let description = task.description;
         let assigned = task.assignedTo;
@@ -90,32 +99,102 @@ async function renderTasks() {
         let deadline = task.endDate;
         let id = task.id;
 
-        let newTask = createTaskElement(title, description, assigned, priority, deadline, status, id);
+        //Verificar si la tarea ya existe en el DOM
+        if (document.querySelector(`[data-id='${id}']`)) {
+            continue; // Si la tarea ya existe, saltar a la siguiente iteración
+        } else {
+            let parsedStatus = "";
 
-        // taskcolumn no existe en este contexto
+            switch (status.toLowerCase()) { // Convertir a minúsculas para simplificar
+                case "backlog":
+                    parsedStatus = "backlog";
+                    break;
+                case "in progress":
+                case "in-progress":
+                    parsedStatus = "in-progress";
+                    break;
+                case "to do":
+                case "todo":
+                    parsedStatus = "todo";
+                    break;
+                case "blocked":
+                    parsedStatus = "blocked";
+                    break;
+                case "done":
+                    parsedStatus = "done";
+                    break;
+                default:
+                    console.log("no status :(");
+            }
 
-        let parsedStatus = "";
-        switch (status) {
-            case "Backlog": parsedStatus = "backlog";
-                break;
-            case "In Progress": parsedStatus = "in-progress";
-                break;
-            case "To Do": parsedStatus = "todo";
-                break;
-            case "Blocked": parsedStatus = "blocked";
-                break;
-            case "Done": parsedStatus = "done";
-                break;
-            default:
-                console.log("no status :(");
+            if (parsedStatus) { 
+                let newTask = renderTaskElement(title, description, assigned, priority, deadline, status, id); 
+                taskColumns[parsedStatus].appendChild(newTask);
+            }
         }
-
-        taskColumns[parsedStatus].appendChild(newTask);
-
     }
-
 }
 
+
+function renderTaskElement(title, description, assigned, priority, deadline, status, id = Date.now()) {
+    const taskElement = document.createElement('div');
+    taskElement.classList.add('box', 'task');
+
+    // Asignar clases de color según la prioridad
+    const priorityClass = {
+        'Low': 'priority-low',
+        'Medium': 'priority-medium',
+        'High': 'priority-high'
+    }[priority] || 'priority-low'; // Valor predeterminado si no coincide
+
+    taskElement.classList.add(priorityClass); // Añadir la clase de color según la prioridad
+    taskElement.dataset.id = id;
+    taskElement.draggable = true;  // Hacer que la tarea sea draggable
+
+    // Definir la imagen de perfil según el usuario asignado
+    const profilePics = {
+        'Persona1': '1.jpg',
+        'Persona2': '3.jpg',
+        'Persona3': '2.jpg'
+    };
+    const profilePic = profilePics[assigned] || '2.jpg';
+
+    taskElement.innerHTML = `
+        <div class="task-header">
+            <img src="${profilePic}" alt="${assigned}" class="profile-pic">
+            <div class="task-title">
+                <h3>${title}</h3>
+                <p class="description">${description}</p>
+            </div>
+        </div>
+        <div class="details">
+            <p>
+                <i class="fa-solid fa-user"></i>
+                <strong>Asignado:</strong> ${assigned}
+            </p>
+            <p class="priority ${priority.toLowerCase()}">
+                <i class="fa-solid fa-tag"></i>
+                <strong>Prioridad:</strong> ${priority}
+            </p>
+        </div>
+        <p class="deadline">
+            <i class="fa-solid fa-clock"></i>
+            <strong>Fecha límite:</strong> ${deadline}
+        </p>
+    `;
+
+    // Evento de arrastrar (dragstart)
+    taskElement.addEventListener('dragstart', function (event) {
+        event.dataTransfer.setData('text/plain', id); // Guardar el id de la tarea arrastrada
+    });
+
+    // Evento de clic para editar la tarea
+    taskElement.addEventListener('click', function () {
+        openEditModal(id);
+    });
+
+    return taskElement;
+}
 
 // Dark/Light Mode
 toggleModeBtn.addEventListener('click', toggleMode);
@@ -182,14 +261,6 @@ function openEditModal(taskId) {
 
 // Fin MODAL --------------------------------
 
-// Inicio ADD TASKS --------------------------------
-let taskColumns = {
-    backlog: document.getElementById('backlog').querySelector('.tasks'),
-    todo: document.getElementById('todo').querySelector('.tasks'),
-    'in-progress': document.getElementById('in-progress').querySelector('.tasks'),
-    blocked: document.getElementById('blocked').querySelector('.tasks'),
-    done: document.getElementById('done').querySelector('.tasks')
-};
 
 let currentTaskId = null;
 
@@ -304,6 +375,7 @@ document.getElementById('saveTaskBtn').addEventListener('click', function (event
         const newTask = createTaskElement(title, description, assigned, priority, deadline, status);
         taskColumns[status].appendChild(newTask);
         console.log("crear nueva")
+        //postNewTask(title,description,assigned,deadline,status,priorityClass);
     }
 
     closeModal();
