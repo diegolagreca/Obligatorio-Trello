@@ -17,11 +17,10 @@ let taskColumns = {
     done: document.getElementById('done').querySelector('.tasks')
 };
 
-
-
+// Se renderizan todas las tareas en el DOM
 renderTasks();
 
-// metodo post
+// Método POST
 async function postNewTask(title, description, assigned, deadline, status, priority) {
     // Crear el objeto con los datos de la tarea
     const newTask = {
@@ -85,7 +84,7 @@ async function getAllTasks() {
 }
 
 
-//Arreglo de persistencia de neuvas tareas en el DOM y duplicado de tareas tras recargar la página
+// Arreglo de persistencia de neuvas tareas en el DOM y duplicado de tareas tras recargar la página
 async function renderTasks() {
     let taskArray = await getAllTasks(); // Obtener todas las tareas del servidor
 
@@ -101,7 +100,7 @@ async function renderTasks() {
 
         //Verificar si la tarea ya existe en el DOM
         if (document.querySelector(`[data-id='${id}']`)) {
-            continue; // Si la tarea ya existe, saltar a la siguiente iteración
+            continue; // Si la tarea ya existe, salteo la iteración
         } else {
             let parsedStatus = "";
 
@@ -145,11 +144,12 @@ function renderTaskElement(title, description, assigned, priority, deadline, sta
         'Low': 'priority-low',
         'Medium': 'priority-medium',
         'High': 'priority-high'
-    }[priority] || 'priority-low'; // Valor predeterminado si no coincide
+    }[priority] || 'priority-low';
 
-    taskElement.classList.add(priorityClass); // Añadir la clase de color según la prioridad
+    taskElement.classList.add(priorityClass);
     taskElement.dataset.id = id;
-    taskElement.draggable = true;  // Hacer que la tarea sea draggable
+    // Hacer que la tarea sea draggable
+    taskElement.draggable = true;
 
     // Definir la imagen de perfil según el usuario asignado
     const profilePics = {
@@ -505,20 +505,24 @@ async function updateTask(id, title, description, assigned, priority, deadline, 
 
     try {
         // Realizar la solicitud PATCH usando fetch
-        const response = await fetch(`${serverURL}${id}`, { 
-            method: "PATCH",  // 
+        const response = await fetch(`${serverURL}${id}`, {
+            method: "PATCH",  // Método HTTP PATCH
             headers: {
-                "Content-Type": "application/json"  
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify(updatedTask)  /
+            body: JSON.stringify(updatedTask)
         });
 
         // Verificar si la solicitud fue exitosa
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        // Obtener la respuesta del servidor
         const result = await response.json();
         console.log("Task updated successfully:", result);
+
+        // Actualizar el DOM o realizar otras acciones necesarias
 
     } catch (error) {
         console.error("Error updating task:", error);
@@ -527,17 +531,22 @@ async function updateTask(id, title, description, assigned, priority, deadline, 
 
 document.getElementById('deleteTaskBtn').addEventListener('click', async function (event) {
     event.preventDefault();
-    
+
     if (currentTaskId) {
+        // Confirmar eliminación
         const confirmation = confirm("¿Está seguro de que quiere eliminar esta tarea?");
         if (confirmation) {
+            // Enviar solicitud DELETE para eliminar la tarea
             await deleteTask(currentTaskId);
+            // Eliminar la tarea del DOM
             deleteTaskFromDOM(currentTaskId);
             // Cerrar el modal
             closeModal();
         }
     }
 });
+
+// Funcion delete
 async function deleteTask(id) {
     try {
         const response = await fetch(`${serverURL}${id}`, {
@@ -557,6 +566,8 @@ async function deleteTask(id) {
         console.error("Error deleting task:", error);
     }
 }
+
+// Funcion delete del DOM, asi no tengo que esperar a recargar la pagina para mostrar los updates
 function deleteTaskFromDOM(id) {
     const taskElement = document.querySelector(`[data-id='${id}']`);
     if (taskElement) {
