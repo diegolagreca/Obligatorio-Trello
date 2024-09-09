@@ -199,6 +199,7 @@ async function renderTasks() {
     }
 }
 
+// La funcion render crea el elemeto HTML de la task
 function renderTaskElement(title, description, assigned, priority, deadline, status, id = Date.now()) {
     const taskElement = document.createElement('div');
     taskElement.classList.add('box', 'task');
@@ -260,12 +261,14 @@ function renderTaskElement(title, description, assigned, priority, deadline, sta
     return taskElement;
 }
 
+// La funcion esta renderiza un elemento HTML y lo crea en el backend
 function createTaskElement(title, description, assigned, priority, deadline, status, id = Date.now()) {
     let taskElement = renderTaskElement(title, description, assigned, priority, deadline, status, id);
     postNewTask(title, description, assigned, deadline, status, priority);
     return taskElement;
 }
 
+// Funcion para hacer toggle de rark y light mode
 function toggleMode() {
     let currentMode = document.documentElement.getAttribute('data-theme');
 
@@ -276,6 +279,7 @@ function toggleMode() {
     }
 }
 
+// Funcion para manejar los backgrounds
 function changeBackground() {
     let selectedBackground = document.getElementById("backgroundSelector").value;
 
@@ -286,11 +290,13 @@ function changeBackground() {
     }
 }
 
+// Funcion para abrir modal
 function openModal() {
     taskModal.classList.add('is-active');
     taskForm.reset();  // Limpiar el formulario cuando se abre el modal
 }
 
+// Funcion para cerrar modal
 function closeModal() {
     taskModal.classList.remove('is-active');
     taskForm.reset();  // Limpiar el formulario cuando se cierra el modal
@@ -298,6 +304,7 @@ function closeModal() {
     currentTaskId = null; // Resetear el ID para nuevas tareas
 }
 
+// Funcion para manejar el edit modal
 function openEditModal(taskId) {
     currentTaskId = taskId; // Almacena el ID de la tarea que se está editando
     const taskElement = document.querySelector(`[data-id='${taskId}']`);
@@ -334,6 +341,7 @@ function openEditModal(taskId) {
     taskModal.classList.add('is-active');
 }
 
+// Funcion auxiliar de Update para actualizar el DOM sin recargar la pagina
 function updateTaskInDOM(id, title, description, assigned, priority, deadline, status) {
     const taskElement = document.querySelector(`[data-id='${id}']`);
 
